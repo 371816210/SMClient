@@ -1,5 +1,11 @@
 package com.inhuasoft.smclient;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.BitSet;
+import java.util.Date;
+
 import org.videolan.libvlc.EventHandler;
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.LibVlcException;
@@ -13,17 +19,22 @@ import android.os.Handler;
 import android.os.Message;
 import android.app.Activity;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
+import android.support.v4.widget.SimpleCursorAdapter.ViewBinder;
 import android.util.Log;
 import android.view.Menu;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements SurfaceHolder.Callback, IVideoPlayer {
+public class MainActivity extends Activity implements SurfaceHolder.Callback, IVideoPlayer,OnClickListener{
 
 	
     public final static String TAG = "VLC/MainActivity";
@@ -59,10 +70,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, IV
     SurfaceHolder mSurfaceHolder ;
 	SurfaceView mSurfaceView ; 
 	LibVLC mLibVLC ;
+	Button btnCaputre;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
+		btnCaputre = (Button)findViewById(R.id.btn_capture);
+		btnCaputre.setOnClickListener(this);
 		mSurfaceView = (SurfaceView)findViewById(R.id.surfaceView1);
 		mSurfaceHolder = mSurfaceView.getHolder() ;
 		mSurfaceHolder.addCallback(this);
@@ -368,6 +383,54 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, IV
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
+	}
+
+	@Override
+	public void onClick(View arg0) {
+		// TODO Auto-generated method stub
+		switch (arg0.getId()) {
+		case R.id.btn_capture:
+			  Toast.makeText(getApplicationContext(), "click", Toast.LENGTH_SHORT).show();
+			  CapturePic();
+			break;
+
+		default:
+			break;
+		}
+	}
+	
+	public void CapturePic() {
+		Bitmap bitmap ;
+		View rv = mSurfaceView ;
+		rv.setDrawingCacheEnabled(true);
+		bitmap = Bitmap.createBitmap(rv.getDrawingCache());
+		rv.setDrawingCacheEnabled(false);
+		String strfilename  = "capture.jpg" ;
+		FileOutputStream fos = null;
+		 try {
+
+             fos = openFileOutput(strfilename, getApplicationContext().MODE_PRIVATE);
+
+         } catch (FileNotFoundException e1) {
+
+             e1.printStackTrace();
+             Log.v("","FileNotFoundException: "+e1.getMessage());
+
+         }
+
+         try {
+             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+             fos.flush();
+             fos.close();
+
+         } catch (FileNotFoundException e) {
+             // TODO Auto-generated catch block
+             e.printStackTrace();
+         } catch (IOException e) {
+             // TODO Auto-generated catch block
+             e.printStackTrace();
+         } 
+		
 	}
 
 }
