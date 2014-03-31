@@ -1,9 +1,11 @@
 package com.inhuasoft.smclient;
 
+import org.videolan.libvlc.EventHandler;
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.LibVlcException;
 import org.videolan.libvlc.IVideoPlayer;
 import org.videolan.libvlc.WeakHandler;
+
 
 
 import android.os.Bundle;
@@ -19,6 +21,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 public class MainActivity extends Activity implements SurfaceHolder.Callback, IVideoPlayer {
 
@@ -81,10 +84,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, IV
 		}
 		if(mLibVLC != null)
 		{
-			mLibVLC.setHardwareAcceleration(LibVLC.HW_ACCELERATION_AUTOMATIC);
+			mLibVLC.setHardwareAcceleration(LibVLC.HW_ACCELERATION_FULL);
 			mLibVLC.eventVideoPlayerActivityCreated(true);
+			EventHandler em = EventHandler.getInstance();
+		        em.addHandler(eventHandler);
 			//mLibVLC.playMRL("rtsp://218.204.223.237:554/live/1/66251FC11353191F/e7ooqwcfbqjoo80j.sdp");
-			mLibVLC.playMRL("rtsp://192.168.4.102:8086");
+			mLibVLC.playMRL("rtsp://192.168.4.102:8086?camera=front");
 		}
 		
 		
@@ -149,6 +154,86 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, IV
         }
     };
 	
+    
+    
+    /**
+     *  Handle libvlc asynchronous events
+     */
+    private final Handler eventHandler = new VideoPlayerEventHandler(this);
+
+    private static class VideoPlayerEventHandler extends WeakHandler<MainActivity> {
+        public VideoPlayerEventHandler(MainActivity owner) {
+            super(owner);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            MainActivity activity = getOwner();
+            if(activity == null) return;
+            // Do not handle events if we are leaving the VideoPlayerActivity
+          //  if (activity.mSwitchingView) return;
+
+            switch (msg.getData().getInt("event")) {
+                case EventHandler.MediaParsedChanged:
+                    Log.i(TAG, "MediaParsedChanged");
+                    if (activity.mLibVLC.getVideoTracksCount() < 1) {
+                        Log.i(TAG, "No video track, open in audio mode");
+                      //  activity.switchToAudioMode();
+                    }
+                    break;
+                case EventHandler.MediaPlayerPlaying:
+                    Log.i(TAG, "MediaPlayerPlaying");
+                 //   activity.stopLoadingAnimation();
+                 //  activity.showOverlay();
+                    /** FIXME: update the track list when it changes during the
+                     *  playback. (#7540) */
+                 //   activity.setESTrackLists(true);
+                 //   activity.setESTracks();
+                 //   activity.changeAudioFocus(true);
+                    break;
+                case EventHandler.MediaPlayerPaused:
+                    Log.i(TAG, "MediaPlayerPaused");
+                    break;
+                case EventHandler.MediaPlayerStopped:
+                    Log.i(TAG, "MediaPlayerStopped");
+                 //   activity.changeAudioFocus(false);
+                    break;
+                case EventHandler.MediaPlayerEndReached:
+                    Log.i(TAG, "MediaPlayerEndReached");
+                 //   activity.changeAudioFocus(false);
+                 //   activity.endReached();
+                    break;
+                case EventHandler.MediaPlayerVout:
+                  //  activity.handleVout(msg);
+                    break;
+                case EventHandler.MediaPlayerPositionChanged:
+                  //  if (!activity.mCanSeek)
+                  //      activity.mCanSeek = true;
+                    //don't spam the logs
+                    break;
+                case EventHandler.MediaPlayerEncounteredError:
+                    Log.i(TAG, "MediaPlayerEncounteredError");
+                    Toast.makeText(activity.getApplicationContext(), "MediaPlayerEncounteredError", Toast.LENGTH_LONG).show();
+                   // activity.encounteredError();
+                    break;
+                case EventHandler.MediaPlayerBuffering:
+                    Log.i(TAG, "MediaPlayerBuffering");
+                   // Toast.makeText(activity.getApplicationContext(), "MediaPlayerEncounteredError", Toast.LENGTH_LONG).show();
+                   // activity.encounteredError();
+                    break;
+                case EventHandler.HardwareAccelerationError:
+                    Log.i(TAG, "HardwareAccelerationError");
+                   // activity.handleHardwareAccelerationError();
+                    break;
+                default:
+                    Log.e(TAG, String.format("Event not handled (0x%x)", msg.getData().getInt("event")));
+                    break;
+            }
+           // activity.updateOverlayPausePlay();
+        }
+    };
+
+    
     
     private void changeSurfaceSize() {
         int sw;
@@ -225,6 +310,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, IV
 	LayoutParams lp = mSurfaceView.getLayoutParams();
 	lp.width =  (int) Math.ceil(dw * mVideoWidth / mVideoVisibleWidth);;
 	lp.height = (int) Math.ceil(dh * mVideoHeight / mVideoVisibleHeight);
+	lp.width = 400;
+	lp.height = 300;
 	mSurfaceView.setLayoutParams(lp);
 	mSurfaceView.invalidate();
 
