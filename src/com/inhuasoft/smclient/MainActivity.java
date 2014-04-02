@@ -1,8 +1,10 @@
 package com.inhuasoft.smclient;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.BitSet;
 import java.util.Date;
 
@@ -11,7 +13,6 @@ import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.LibVlcException;
 import org.videolan.libvlc.IVideoPlayer;
 import org.videolan.libvlc.WeakHandler;
-
 
 
 import android.os.Bundle;
@@ -106,6 +107,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, IV
 			//mLibVLC.playMRL("rtsp://218.204.223.237:554/live/1/66251FC11353191F/e7ooqwcfbqjoo80j.sdp");
 			mLibVLC.playMRL("rtsp://192.168.4.102:8086?camera=front");
 		}
+		
+		pathIsExist();
 		
 		
 	}
@@ -391,13 +394,55 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, IV
 		switch (arg0.getId()) {
 		case R.id.btn_capture:
 			  Toast.makeText(getApplicationContext(), "click", Toast.LENGTH_SHORT).show();
-			  CapturePic();
+			  //CapturePic();
+			  snapShot();
 			break;
 
 		default:
 			break;
 		}
 	}
+	
+	/**
+	 * 路径是否存在  不存在则创建
+	 */
+	private void pathIsExist()
+	{
+		File file = new File(BitmapUtils.getSDPath()+"/smclient/capture/") ;
+        if(!file.exists())
+        	file.mkdirs();
+        
+        File file1 = new File(BitmapUtils.getSDPath()+"/smclient/video/") ;
+        if(!file1.exists())
+        	file1.mkdirs();
+	}
+	
+	
+	/**
+	 * 截图
+	 */
+	private void snapShot()
+	{
+		try {
+			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+			String name = df.format(new Date());
+			name = BitmapUtils.getSDPath()+"/smclient/capture/"+name+".png";
+			File file = new File(name);
+			if(!file.exists())
+				file.createNewFile();
+			if(mLibVLC.takeSnapShot(name, 640, 360)) 
+			{
+			Toast.makeText(getApplicationContext(), "已保存", 1000).show();
+			}
+			else
+			{
+				Toast.makeText(getApplicationContext(), "截图失败", 1000).show();
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	
 	public void CapturePic() {
 		Bitmap bitmap ;

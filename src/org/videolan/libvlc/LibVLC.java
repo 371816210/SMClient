@@ -598,6 +598,13 @@ public class LibVLC {
      * @return the libVLC changeset string
      */
     public native String changeset();
+    
+    
+    
+    public boolean takeSnapShot(String file, int width, int height) {  
+          return takeSnapShot(0, file, width, height);  
+}
+
 
     /**
      * Get a media thumbnail.
@@ -683,4 +690,6 @@ public class LibVLC {
     public native String[] getPresets();
 
     public native float[] getPreset(int index);
+    
+    private native boolean takeSnapShot( int num, String file, int width, int height);  
 }
