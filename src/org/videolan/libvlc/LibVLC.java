@@ -692,4 +692,12 @@ public class LibVLC {
     public native float[] getPreset(int index);
     
     private native boolean takeSnapShot( int num, String file, int width, int height);  
+    public native boolean videoRecordStart(String path);
+    
+    public native boolean videoRecordStop();
+    
+    public native boolean videoIsRecording();
+    
+    public native boolean videoIsRecordable();
+    public native int getState();
 }

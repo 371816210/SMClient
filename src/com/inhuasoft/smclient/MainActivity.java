@@ -15,6 +15,7 @@ import org.videolan.libvlc.IVideoPlayer;
 import org.videolan.libvlc.WeakHandler;
 
 
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -71,7 +72,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, IV
     SurfaceHolder mSurfaceHolder ;
 	SurfaceView mSurfaceView ; 
 	LibVLC mLibVLC ;
-	Button btnCaputre;
+	Button btnCaputre,btnVideRecord;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -79,6 +80,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, IV
 		
 		btnCaputre = (Button)findViewById(R.id.btn_capture);
 		btnCaputre.setOnClickListener(this);
+		
+		btnVideRecord = (Button)findViewById(R.id.btn_video_record);
+		btnVideRecord.setOnClickListener(this);
 		mSurfaceView = (SurfaceView)findViewById(R.id.surfaceView1);
 		mSurfaceHolder = mSurfaceView.getHolder() ;
 		mSurfaceHolder.addCallback(this);
@@ -100,12 +104,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, IV
 		}
 		if(mLibVLC != null)
 		{
-			mLibVLC.setHardwareAcceleration(LibVLC.HW_ACCELERATION_FULL);
+			mLibVLC.setHardwareAcceleration(LibVLC.HW_ACCELERATION_AUTOMATIC);
 			mLibVLC.eventVideoPlayerActivityCreated(true);
 			EventHandler em = EventHandler.getInstance();
 		        em.addHandler(eventHandler);
 			//mLibVLC.playMRL("rtsp://218.204.223.237:554/live/1/66251FC11353191F/e7ooqwcfbqjoo80j.sdp");
-			mLibVLC.playMRL("rtsp://192.168.4.102:8086?camera=front");
+			mLibVLC.playMRL("rtsp://192.168.4.102:8086");
 		}
 		
 		pathIsExist();
@@ -397,6 +401,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, IV
 			  //CapturePic();
 			  snapShot();
 			break;
+		case R.id.btn_video_record:
+			 videoRecord();
 
 		default:
 			break;
@@ -442,6 +448,45 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, IV
 			e.printStackTrace();
 		}
 	}
+	
+	
+	/**
+	 * Â¼ÏñºÍÍ£Ö¹Â¼Ïñ
+	 */
+	private void videoRecord()
+	{
+		try {
+			
+			if(mLibVLC.videoIsRecording())
+			{
+				if(mLibVLC.videoRecordStop()) 
+				{
+				Toast.makeText(getApplicationContext(), "Í£Ö¹Â¼Ïñ", 1000).show();
+				}
+				else
+				{
+					Toast.makeText(getApplicationContext(), "Í£Ö¹Â¼ÏñÊ§°Ü", 1000).show();
+				}
+			}
+			else
+			{
+				SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+				String name = df.format(new Date());
+			if(mLibVLC.videoRecordStart(BitmapUtils.getSDPath()+"/smclient/video/"+name)) 
+			{
+			Toast.makeText(getApplicationContext(), "¿ªÊ¼Â¼Ïñ", 1000).show();
+			}
+			else
+			{
+				Toast.makeText(getApplicationContext(), "¿ªÊ¼Â¼ÏñÊ§°Ü", 1000).show();
+			}
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
 	
 	
 	public void CapturePic() {
